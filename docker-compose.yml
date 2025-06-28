@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      - .:/src
+    network_mode: host
+    environment:
+      - DISPLAY=192.168.1.56:0
+    working_dir: /src
