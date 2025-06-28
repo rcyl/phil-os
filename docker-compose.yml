@@ -5,7 +5,10 @@ services:
       context: .
     volumes:
       - .:/src
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
     network_mode: host
+    user: ${MYID}
     environment:
       - DISPLAY=192.168.1.56:0
     working_dir: /src

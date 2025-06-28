@@ -18,5 +18,6 @@ build-std-features = ["compiler-builtins-mem"]
 
 build-std = ["core", "compiler_builtins"]
 
+# Runner sets 
 [target.'cfg(target_os = "none")']
 runner = "bootimage runner"
