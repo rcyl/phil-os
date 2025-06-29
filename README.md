@@ -42,3 +42,44 @@ test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]
 ```
 core::any::type_name::<T>()
 ```
+
+```
+cargo test --lib
+```
+## Interrupt Descriptor Table
+
+- Specifies a handler for each CPU exception
+
+## Interrupt Calling Convention
+- A function call is invoked voluntarily by a compiler inserted call instruction,
+while an exception might occur at any instruction
+
+### System V ABI (for C functions)
+1. the first six integer arguments are passed in registers rdi, rsi, rdx, rcx, r8, r9
+1. additional arguments are passed on the stack
+1. results are returned in rax and rdx
+
+#### Preserved and Scratch Registers
+- Values of **preserved registers** must remain unchanged across function calls
+- So a called function , aka **callee** is only allowed to overwrite these register
+if it restores their original values before returning 
+- A common patten is to save these registers to the stack at the functions
+beginning and restore them just before returning. 
+- A called function is allowed to ovewrite **scratch registers** without restrictions
+- If the caller wants to preserve the value of a scratch register across a function call, 
+it needs to backup and restore it before the function call (e.g., by pushing it to the stack)
+- Scratch register are **caller-saved**.
+
+- On x86_64, C calling convetion specifies the following:
+
+| preserved registers | scratch registers |
+| --------- | ------- | 
+| rbp, rbx, rsp, r12, r13, r14, r15 | rax, rcx, rdx, rsi, rdi, r8, r9, r10, r11 |  
+| calle-saved                       | caller-saved |
+
+#### Preserving all registers
+- For interrups, we need a calling convention that preserves all registers
+- **x86-interrupt** calling convention is such a convention as it guarantees
+that all register values are restored to the original values on function return
+- But this does not mean all registers are saved to the stack, the compiler
+only backs up the registers that are overwritten by the function
