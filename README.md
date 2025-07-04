@@ -83,3 +83,43 @@ it needs to backup and restore it before the function call (e.g., by pushing it 
 that all register values are restored to the original values on function return
 - But this does not mean all registers are saved to the stack, the compiler
 only backs up the registers that are overwritten by the function
+
+## Double faults
+
+```
+unsafe {
+    *(0xdeadbeef as *mut u8) = 42;
+};
+```
+1. CPU tries to write 0xdeadbeef which causes a page fault.
+1. CPU looks at the entry in IDT and sees no handler function is specified.
+It cannot call the page fault handler and a double fault occurs. 
+1. CPU looks at the IDT entry of double fault handler, but this does not 
+specify a handler also, so a triple fault occurs
+1. A triple fault is fatal, so QEMU reacts like a real hardware and issues a
+system reset. QEMU enters boot loop
+
+## Kernel Stack Overflow
+
+### Guard page
+Special memory page at the bottom of the stack. Not mapped to any physical
+frame, so accessing it causes a page fault instead of corrupting other memory.
+Bootloader sets up a guard page for our kernel stack so a stack overflow causes
+a page fault. 
+
+## Switching stacks
+X86_64 is able to switch to a predefined known good stack when an exception occurs. 
+This happens at the hardware level. 
+The switching is done as an **Interrupt Stack Table (IST)**. The  IST is a table of
+7 pointers to known good statkcs. 
+
+### **Task State Segment (TSS)** 
+TSS is used to hold various bits of about a task in 32 bit mode
+and was used for hardware context switching. 
+But in x86_64, it no longer holds any task specific information but instead
+it holds 2 stack tables (IST) is one of them. 
+
+## Global Descriptor Table GDT
+
+Segmentation is no longer supported in 64 bit mode, but GDT still exists.
+GDT is used for switching between kernel and user space and loading a TSS structure

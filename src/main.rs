@@ -11,10 +11,12 @@ static HELLO: &[u8] = b"Hello World!";
 
 // no mangling, because we need to tell the name of the entry point
 // function to the linker, with mangling with get some cryptic function name
-#[unsafe(no_mangle)] 
+#[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
-    // 0xb8000 is the address of the VGA buffer in BIOS, cast to raw pinter 
-    // let vga_buffer = 0xb8000 as *mut u8; 
+    
+    //{
+    // 0xb8000 is the address of the VGA buffer in BIOS, cast to raw pinter
+    // let vga_buffer = 0xb8000 as *mut u8;
 
     // for (i, &byte) in HELLO.iter().enumerate() {
     //     unsafe {
@@ -28,13 +30,30 @@ pub extern "C" fn _start() -> ! {
     // use core::fmt::Write;
     // vga_buffer::WRITER.lock().write_str("Hello again").unwrap();
     // write!(vga_buffer::WRITER.lock(), "some numbers: {} {}", 42, 1.337).unwrap();
+    // }
 
     println!("Hello World{}", "!");
 
     phil_os::init();
 
-    // invoke a breakpoint exception
-    x86_64::instructions::interrupts::int3();
+    /* invoke a breakpoint exception */
+    // x86_64::instructions::interrupts::int3();
+
+    /* trigger a page fault */
+    // {
+    //     unsafe {
+    //         *(0xdeadbeef as *mut u8) = 42;
+    //     };
+    // }
+
+    /* Trigging stack overflow */
+    {
+        fn stack_overflow() {
+            stack_overflow(); // for each recursion the address is pushed
+        }
+        stack_overflow();
+    }
+
 
     #[cfg(test)]
     test_main();

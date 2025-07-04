@@ -1,5 +1,5 @@
-use volatile::Volatile;
 use core::fmt;
+use volatile::Volatile;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -26,7 +26,7 @@ pub enum Color {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 //ABI of the whole struct/enum is guaranteed to be the same as that one field.
 // can only be used on a single-variant enum
-#[repr(transparent)] 
+#[repr(transparent)]
 struct ColorCode(u8);
 impl ColorCode {
     fn new(foreground: Color, background: Color) -> ColorCode {
@@ -72,7 +72,7 @@ lazy_static! {
 
     // To synchronize interior mutability, users of std library
     // can use Mutex, but our basic kernel has no blocking or even concepts
-    // of threads, so can't use it. 
+    // of threads, so can't use it.
     // spinlock does not require OS features
 
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
@@ -110,7 +110,7 @@ impl Writer {
                     self.new_line();
                 }
                 // Last row index is buffer height - 1
-                let row = BUFFER_HEIGHT - 1; 
+                let row = BUFFER_HEIGHT - 1;
                 let col = self.column_position;
 
                 let color_code = self.color_code;
@@ -129,10 +129,10 @@ impl Writer {
                 // printable ASCII range
                 0x20..=0x7e | b'\n' => self.write_byte(byte),
                 // not part of printable ASCII range
-                _ => self.write_byte(0xfe), 
+                _ => self.write_byte(0xfe),
             }
         }
-    } 
+    }
 
     // Move every character of every line one line up
     fn new_line(&mut self) {
@@ -155,7 +155,6 @@ impl Writer {
             self.buffer.chars[row][col].write(blank);
         }
     }
-    
 }
 
 impl fmt::Write for Writer {
@@ -170,17 +169,17 @@ pub fn print_something() {
     let mut writer = Writer {
         column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer)},
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     };
 
     writer.write_byte(b'H');
     writer.write_string("ello ");
     // ö (2 bytes in UTF-8) is printed as 2 blank chars
     // and are not printable. multi byte values are never valid ASCII
-    // writer.write_string("Wörld!"); 
+    // writer.write_string("Wörld!");
 
     // We can unwrap because write to VGA buffers never fail
-    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
+    write!(writer, "The numbers are {} and {}", 42, 1.0 / 3.0).unwrap();
 }
 
 #[test_case]

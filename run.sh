@@ -1,4 +1,4 @@
 #!/bin/sh
 
 MYID="$(id -u):$(id -g)"
-docker compose run app bash
+MYID=${MYID} docker compose run app bash

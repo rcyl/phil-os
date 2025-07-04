@@ -13,6 +13,10 @@ edition = "2024"
 name = "should_panic"
 harness = false
 
+[[test]]
+name = "stack_overflow"
+harness = false
+
 [dependencies]
 # Basic BIOS bootloeader without C dependencies, just Rust and inline assembly
 bootloader = "0.9"
@@ -26,9 +30,10 @@ uart_16550 = "0.2.0"
 # The iobase and iosize specifies the port through the device 
 # can be reached form the kernel
 [package.metadata.bootimage]
+# For test only
 test-args = [
     "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
-    # Redirect output to stdout
+    # Redirect output to stdou
     "-serial", "stdio",
     # Hide qemu window since we already have stdout
     "-display", "none"
