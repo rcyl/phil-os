@@ -47,26 +47,26 @@ pub extern "C" fn _start() -> ! {
     // }
 
     /* Trigging stack overflow */
-    {
-        fn stack_overflow() {
-            stack_overflow(); // for each recursion the address is pushed
-        }
-        stack_overflow();
-    }
-
+    // {
+    //     fn stack_overflow() {
+    //         stack_overflow(); // for each recursion the address is pushed
+    //     }
+    //     stack_overflow();
+    // }
 
     #[cfg(test)]
     test_main();
 
     println!("It did not crash");
-    loop {}
+    phil_os::hlt_loop();
+
 }
 
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    phil_os::hlt_loop();
 }
 
 // panic handler in test mode

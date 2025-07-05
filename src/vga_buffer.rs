@@ -61,6 +61,7 @@ pub struct Writer {
 
 use lazy_static::lazy_static;
 use spin::Mutex;
+use x86_64::instructions::interrupts;
 
 lazy_static! {
     // Write is uselss since it is immutable
@@ -98,7 +99,12 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap()
+    use x86_64::instructions::interrupts;
+
+    // no interrupt can occur as long as the Mutex is locked
+    interrupts::without_interrupts(|| {
+         WRITER.lock().write_fmt(args).unwrap()
+    });
 }
 
 impl Writer {
@@ -184,13 +190,21 @@ pub fn print_something() {
 
 #[test_case]
 fn test_println_output() {
+    use core::fmt::Write;
+    use x86_64::instructions::interrupts;
     // Act
     let s = "Some test string that fits on a single line";
-    println!("{}", s);
-    // Assert
-    for (i, c) in s.chars().enumerate() {
-        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
-        //assert_eq!(screen_char.ascii_character, c);
-        assert_eq!(char::from(screen_char.ascii_character), c);
-    }
+    
+    // Disable interrupt for the test's duration, otherwise test might get
+    // interupted by the timer handler
+    interrupts::without_interrupts(|| {
+        let mut writer = WRITER.lock();
+        writeln!(writer, "\n{}", s).expect("writeln failed");
+        // Assert
+        for (i, c) in s.chars().enumerate() {
+            let screen_char = writer.buffer.chars[BUFFER_HEIGHT - 2][i].read();
+            //assert_eq!(screen_char.ascii_character, c);
+            assert_eq!(char::from(screen_char.ascii_character), c);
+        }
+    });
 }
