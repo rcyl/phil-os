@@ -123,3 +123,8 @@ it holds 2 stack tables (IST) is one of them.
 
 Segmentation is no longer supported in 64 bit mode, but GDT still exists.
 GDT is used for switching between kernel and user space and loading a TSS structure
+
+## Page tables
+- A pointer to the currently active table is stored in a special CPU register
+called CR3 (in x86)
+- CR2 register is automatically set by the CPU on page fault

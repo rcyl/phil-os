@@ -36,15 +36,43 @@ pub extern "C" fn _start() -> ! {
 
     phil_os::init();
 
+    /* print the physical address of level 4 page table */
+    {
+        use x86_64::registers::control::Cr3;
+        let (level_4_page_table, _) = Cr3::read();
+        println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
+        // prints PhysAddr(0x1000)
+    }
+
     /* invoke a breakpoint exception */
     // x86_64::instructions::interrupts::int3();
 
     /* trigger a page fault */
     // {
+    //     let ptr = 0xdeadbeef as *mut u8;
     //     unsafe {
-    //         *(0xdeadbeef as *mut u8) = 42;
+    //         *ptr = 42;
     //     };
     // }
+
+    /* read from a code page */
+    // {
+    //     // ptr value comes from the virt address when we deliberately
+    //     // ran page fault code above in QEMU
+    //     let ptr = 0x205284 as *mut u8;
+
+    //     // read from a code page
+    //     unsafe { let x = *ptr; }
+    //     println!("read worked");
+        
+    //     // write to a code page
+    //     // this should fail with
+    //     // Protection violation, caused by WRITE
+    //     // since code pages are mapped as read-only
+    //     unsafe {  *ptr = 42; }
+    //     println!("write worked");
+    // }
+
 
     /* Trigging stack overflow */
     // {
